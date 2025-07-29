@@ -154,7 +154,7 @@ env: cuenv.#Env & {
 - Shell variable expansion support
 - Support for multiple shells (bash, zsh, fish)
 - Type-safe configuration with CUE
-- Secret resolution from 1Password and GCP Secrets Manager (with `cuenv run`)
+- Secret resolution from 1Password, GCP Secrets Manager, and AWS Secrets Manager (with `cuenv run`)
 - Automatic secret obfuscation in stdout/stderr to prevent accidental exposure
 - Environment-specific configurations with inheritance
 - Capability-based variable filtering for secure credential management
@@ -319,7 +319,7 @@ env: cuenv.#Env & {
 
     // Secret references - Various providers
     GITHUB_TOKEN: "github://myorg/myrepo/GITHUB_TOKEN"
-    AWS_SECRET: "aws-secret://prod/api/secret"
+    AWS_SECRET: "aws://prod/api/secret"
     GCP_SECRET: "gcp-secret://myproject/db-password"
     AZURE_KEY: "azure-keyvault://myvault/keys/mykey"
     VAULT_TOKEN: "vault://secret/data/myapp/token"
@@ -334,6 +334,7 @@ env: cuenv.#Env & {
 
 - For 1Password: Install [1Password CLI](https://developer.1password.com/docs/cli/) and authenticate with `op signin`
 - For GCP Secrets: Install [gcloud CLI](https://cloud.google.com/sdk/docs/install) and authenticate with `gcloud auth login`
+- For AWS Secrets Manager: Install [AWS CLI](https://aws.amazon.com/cli/) and configure with `aws configure`
 
 **Note:** Secret resolution only happens with `cuenv run`. Regular `cuenv load` will not resolve secrets for security reasons.
 

@@ -7,13 +7,13 @@ Stop commenting "# TODO: Don't commit this" above your API keys. cuenv has actua
 
 ## How It Works
 
-Write `op://vault/item/field` or `gcp-secret://project/name`. Run `cuenv run`. Secrets resolve. No plaintext files. No git accidents.
+Write `op://vault/item/field`, `gcp-secret://project/name`, or `aws://secret-name`. Run `cuenv run`. Secrets resolve. No plaintext files. No git accidents.
 
 The important bits:
 
 - Secrets only resolve with `cuenv run` (not in your regular shell)
 - Values are hidden in logs/output (shows `***` instead)
-- Zero setup beyond having `op` or `gcloud` installed
+- Zero setup beyond having `op`, `gcloud`, or `aws` CLI installed
 
 ## Supported Secret Managers
 
@@ -131,6 +131,72 @@ SMTP_PASSWORD: "gcp-secret://\(_gcpProject)/smtp-credentials"
 
 // Combined with other values
 SERVICE_ACCOUNT_KEY: "gcp-secret://my-project/service-account-key"
+```
+
+### AWS Secrets Manager
+
+AWS Secrets Manager helps you protect access to your applications, services, and IT resources without the upfront investment and on-going maintenance costs of operating your own infrastructure.
+
+#### Setup
+
+1. Install the [AWS CLI](https://aws.amazon.com/cli/):
+
+   ```bash
+   # macOS
+   brew install awscli
+
+   # Linux
+   curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+   unzip awscliv2.zip
+   sudo ./aws/install
+   ```
+
+1. Configure your AWS credentials:
+
+   ```bash
+   aws configure
+   ```
+
+#### Secret Reference Format
+
+AWS secrets use the `aws://` URL scheme:
+
+```
+aws://secret-name
+aws://secret-name/version-stage
+```
+
+#### Examples
+
+```cue title="env.cue"
+package env
+
+import "github.com/rawkode/cuenv/cue"
+
+// Latest version of a secret (uses AWSCURRENT)
+DATABASE_PASSWORD: cuenv.#AwsSecretsManager & {
+    secret_id: "prod/database/password"
+}
+
+// Specific version stage
+API_KEY: cuenv.#AwsSecretsManager & {
+    secret_id: "api-keys/stripe"
+    version: "AWSPREVIOUS"
+}
+
+// Using in connection strings
+DB_USER: "myapp"
+DB_PASS: cuenv.#AwsSecretsManager & {
+    secret_id: "myapp/db/password"
+}
+DB_HOST: "db.example.com"
+DATABASE_URL: "postgres://\(DB_USER):\(DB_PASS)@\(DB_HOST):5432/myapp"
+
+// Cross-region secret (requires AWS CLI configured for that region)
+EXTERNAL_API_TOKEN: cuenv.#AwsSecretsManager & {
+    secret_id: "external-service/token"
+    // Region is controlled via AWS CLI configuration or AWS_DEFAULT_REGION env var
+}
 ```
 
 ## Structured Secret Definitions
